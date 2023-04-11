@@ -7,9 +7,7 @@ import UserHome from "@/pages/user/Home.vue";
 import ElectricityCenter from "@/pages/user/ElectricityCenter.vue";
 import UserAssetManage from "@/pages/user/AssetManage.vue";
 
-import AdminLayout from "@/layout/admin/AdminLayout.vue";
-import AdminHome from "@/pages/admin/HomePage.vue";
-import AdminUserManage from "@/pages/admin/UserManagePage.vue";
+import AdminHome from "@/pages/admin/AdminHome.vue";
 
 const routes = [
     { path: "/", redirect: "/login" },
@@ -28,12 +26,7 @@ const routes = [
     // 管理员部分 界面
     {
         path: "/admin",
-        component: AdminLayout,
-        redirect: "/admin/home",
-        children: [
-            { path: "home", name: "admin-home", component: AdminHome },
-            { path: "user-manage", name: "admin-user-manage", component: AdminUserManage }
-        ]
+        component: AdminHome,
     }
 ]
 

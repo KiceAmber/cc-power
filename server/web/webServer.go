@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 
 	"powerTrading/web/controller"
@@ -36,4 +37,9 @@ func WebStart(app controller.Application) {
 	if err != nil {
 		fmt.Printf("Web服务启动失败: %v\n", err)
 	}
+}
+
+func SetupRouter() {
+	engine := gin.Default()
+
 }
