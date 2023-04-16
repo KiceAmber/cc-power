@@ -54,7 +54,7 @@ $ chmod u+x ./restart.sh
 $ ./restart.sh
 ```
 
-## 涉及到到加密算法
+## 涉及的加密算法
 - 同态加密：https://github.com/tuneinsight/lattigo
 - 环签名：https://github.com/zbohm/lirisi
 - 零知识证明：https://pkg.go.dev/github.com/0xdecaf/zkrp#section-readme
