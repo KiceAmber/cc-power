@@ -24,6 +24,8 @@
 - go 1.8.5
 - docker
 - docker-compose
+- fabric v2.2 版本
+- fabric-ca v1.4.7 版本
 
 ## 运行
 ### 后端及链码部分
