@@ -1,0 +1,122 @@
+version: '3.3'
+
+# 对于couchdb，在编写配置文件时，统一端口5984
+# 如果一台主机上，有多个couchdb要启动，那么主机进行端口映射时，从4000开始
+# 比如couchdb0,4000:5984, couchdb1,4001:5984
+
+# 部署到实际环境后需要修改，关于host_config的配置，最终是写到容器系统中的hosts配置文件中
+
+x-host_config: &host_config
+  - "orderer1.example.com:192.168.127.128"
+  - "peer0.org1.example.com:192.168.127.128"
+  - "peer1.org1.example.com:192.168.127.128"
+  - "peer2.org1.example.com:192.168.127.133"
+  - "peer3.org1.example.com:192.168.127.133"
+
+services:
+  orderer1.example.com:
+    container_name: orderer1.example.com
+    image: hyperledger/fabric-orderer:2.2
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=9000
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - 9000:9000
+    extra_hosts:
+      *host_config
+
+
+  peer0.org1.example.com:
+    container_name: peer0.org1.example.com
+    image: hyperledger/fabric-peer:2.2
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+        #    - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+        # - ORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0.org1.example.com:4000
+        #- CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+        # - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 7051:7051
+      - 7052:7052
+      - 7053:7053
+    extra_hosts:
+      *host_config
+  peer1.org1.example.com:
+    container_name: peer1.org1.example.com
+    image: hyperledger/fabric-peer:2.2
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.org1.example.com
+      - CORE_PEER_ADDRESS=peer1.org1.example.com:7061
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7061
+      - CORE_PEER_CHAINCODEADDRESS=peer1.org1.example.com:7062
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7062
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7061
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.org1.example.com:7061
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_CHAINCODE_EXECUTETIMEOUT=300s
+
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls:/etc/hyperledger/fabric/tls
+    ports:
+      - 7061:7061
+      - 7062:7062
+      - 7063:7063
+    extra_hosts:
+      *host_config
